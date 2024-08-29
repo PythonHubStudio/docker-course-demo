@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC/USDT Prices</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            width: 90vw !important;
+            height: 90vh !important;
+        }
+        h1 {
+            position: absolute;
+            top: 20px;
+            color: #333;
+            font-size: 24px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+<body>
+    <canvas id="priceChart"></canvas>
+    <script>
+        async function fetchData() {
+            const response = await fetch('/data');
+            const data = await response.json();
+            return data;
+        }
+
+        async function createChart() {
+            const data = await fetchData();
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(item => item.timestamp),
+                    datasets: [{
+                        label: 'BTC/USDT Price',
+                        data: data.map(item => item.price),
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 3,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute'
+                            },
+                            ticks: {
+                                color: '#333',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                color: '#333',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#333',
+                                font: {
+                                    size: 16
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            return chart;
+        }
+
+        async function updateChart(chart) {
+            const data = await fetchData();
+            chart.data.labels = data.map(item => item.timestamp);
+            chart.data.datasets[0].data = data.map(item => item.price);
+            chart.update();
+        }
+
+        (async () => {
+            const chart = await createChart();
+            setInterval(() => updateChart(chart), 5000);
+        })();
+    </script>
+</body>
+</html>

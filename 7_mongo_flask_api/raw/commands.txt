@@ -1,0 +1,16 @@
+Делаем сеть
+docker network create mynetwork
+
+Запускаем контейнер с монго
+docker run --name mymongo --network mynetwork -d mongo
+
+Запускаем контейнер с mongo-express
+docker run --name dbbrowser --network mynetwork -e ME_CONFIG_MONGODB_SERVER=mymongo -p 8081:8081 -d mongo-express
+
+Запускаем контейнер
+docker build -t app ./checker
+docker run --name myapp --network mynetwork -d app
+
+Запускаем наш бек/фронт сервис
+docker build -t flask ./plot
+docker run --name plot --network mynetwork -p 5000:5000 -d flask
